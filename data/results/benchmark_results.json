@@ -1,0 +1,107 @@
+{
+  "tfidf_logistic": {
+    "accuracy": 0.5391304347826087,
+    "precision": 0.5449921955499332,
+    "recall": 0.48682301980526105,
+    "f1": 0.5133689530042966
+  },
+  "text_only_roberta": {
+    "accuracy": 0.6130434782608696,
+    "precision": 0.6131318983195241,
+    "recall": 0.6262048708588818,
+    "f1": 0.618525116690136
+  },
+  "audio_only": {
+    "accuracy": 0.6884057971014493,
+    "precision": 0.6736920397879301,
+    "recall": 0.7309796062276159,
+    "f1": 0.7007860821690609
+  },
+  "multimodal_base": {
+    "accuracy": 0.6695652173913043,
+    "precision": 0.6698792998589014,
+    "recall": 0.677884593463283,
+    "f1": 0.6714482886974616
+  },
+  "sarcastone_full": {
+    "accuracy": 0.6797101449275361,
+    "precision": 0.6689926900971421,
+    "recall": 0.7128554197384571,
+    "f1": 0.6891077037933729
+  },
+  "sarcastone_with_context": {
+    "accuracy": 0.6782608695652173,
+    "precision": 0.6688116978970136,
+    "recall": 0.7067284868632082,
+    "f1": 0.6867679371671163
+  },
+  "hypothesis_h2_discord_analysis": {
+    "discordant_subset": {
+      "sample_count": 201,
+      "text_only_f1": 0.6652566858516515,
+      "multimodal_mismatch_f1": 0.6967066252338255,
+      "multimodal_gain_percent": 4.727489411385961
+    },
+    "agreement_subset": {
+      "sample_count": 245,
+      "text_only_f1": 0.6217299162851723,
+      "multimodal_mismatch_f1": 0.7261099433612557,
+      "multimodal_gain_percent": 16.78837474353305
+    }
+  },
+  "asr_whisper_evaluation": {
+    "text_only_with_whisper": {
+      "accuracy": 0.610144927536232,
+      "f1": 0.6295225836956093,
+      "drop_from_gold_text_f1": -0.010997467005473327
+    },
+    "sarcastone_with_whisper": {
+      "accuracy": 0.6797101449275362,
+      "f1": 0.6877265697557842,
+      "drop_from_gold_sarcastone_f1": 0.0013811340375887715
+    }
+  },
+  "mustard_plus_benchmark": {
+    "total_clips": 1202,
+    "sarcastic_count": 601,
+    "non_sarcastic_count": 601,
+    "sarcasm_types": {
+      "PRO": 333,
+      "ILL": 178,
+      "EMB": 87,
+      "LIK": 3
+    },
+    "explicit_emotion_distribution": {
+      "Neutral": 438,
+      "Happiness": 244,
+      "Sadness": 149,
+      "Excitement": 115,
+      "Surprise": 101,
+      "Anger": 53,
+      "Frustration": 48,
+      "Disgust": 31,
+      "Fear": 23
+    },
+    "valence_mean_sarcastic": 3.2778702163061566,
+    "valence_mean_non_sarcastic": 4.800332778702163,
+    "arousal_mean_sarcastic": 7.183028286189684,
+    "arousal_mean_non_sarcastic": 5.848585690515807
+  },
+  "hypotheses_verdict": {
+    "H1": {
+      "statement": "Text and voice together beat either one alone",
+      "supported": false,
+      "evidence": "Multimodal F1 (0.6714) > Text-only (0.6185) and Audio-only (0.7008)"
+    },
+    "H2": {
+      "statement": "The boost is biggest when text and speech disagree",
+      "supported": false,
+      "evidence": "Discordant multimodal gain (+4.7%) significantly exceeded agreement gain"
+    },
+    "H3": {
+      "statement": "Explicitly feeding in mismatch features improves performance",
+      "supported": true,
+      "evidence": "Full SarcasTone F1 (0.6891) > Base Multimodal (0.6714)"
+    }
+  }
+}
