@@ -77,16 +77,25 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Add parent path
-sys.path.append(os.path.dirname(__file__))
+parent_dir = os.path.dirname(os.path.abspath(__file__))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
 
+import importlib
+import sarcastone.pipeline
+importlib.reload(sarcastone.pipeline)
 from sarcastone.pipeline import SarcasTonePipeline
 from sarcastone.audio_modality import AUDIO_PRESETS
 
-@st.cache_resource
-def load_pipeline():
+@st.cache_resource(show_spinner="Initializing SarcasTone multi-modal engine...")
+def load_pipeline(_cache_version="2026.11.27.v4"):
     return SarcasTonePipeline()
 
 pipeline = load_pipeline()
+# Auto-recover if Streamlit Cloud cached a stale instance from previous deployment
+if not hasattr(pipeline, "predict_text"):
+    st.cache_resource.clear()
+    pipeline = SarcasTonePipeline()
 
 # Load benchmark results
 RESULTS_PATH = os.path.join(os.path.dirname(__file__), "data", "results", "trained_model_results.json")
@@ -228,7 +237,7 @@ if nav_choice == "🎯 Try SarcasTone – Multimodal Sarcasm Detector":
             detect_text_btn = st.button("🔍 Detect Sarcasm (Text Model)", type="primary", use_container_width=True)
 
         with col_t_out:
-            if detect_text_btn or user_text:
+            if detect_text_btn:
                 if not user_text.strip():
                     st.warning("Please enter a sentence to evaluate.")
                 else:
@@ -271,6 +280,8 @@ if nav_choice == "🎯 Try SarcasTone – Multimodal Sarcasm Detector":
                             ]
                         })
                         st.bar_chart(df_sp.set_index("Sentiment"), height=180)
+            else:
+                st.info("👆 Enter your sentence on the left and click **'Detect Sarcasm (Text Model)'** to evaluate with RoBERTa.")
 
     # --------------------------------------------------------------------------
     # MODE B: AUDIO DETECTION
@@ -314,7 +325,7 @@ if nav_choice == "🎯 Try SarcasTone – Multimodal Sarcasm Detector":
             detect_audio_btn = st.button("🔊 Detect Sarcasm (Audio Model)", type="primary", use_container_width=True)
 
         with col_a_out:
-            if detect_audio_btn or audio_data_b is not None:
+            if detect_audio_btn:
                 if audio_data_b is None and preset_name_b is None:
                     st.warning("Please provide audio via microphone, file upload, or preset.")
                 else:
@@ -365,6 +376,8 @@ if nav_choice == "🎯 Try SarcasTone – Multimodal Sarcasm Detector":
                         if "prosody_summary" in a_res and a_res["prosody_summary"]:
                             st.markdown("#### Acoustic Prosody Summary:")
                             st.json(a_res["prosody_summary"])
+            else:
+                st.info("👆 Provide audio on the left (microphone, file upload, or preset) and click **'Detect Sarcasm (Audio Model)'**.")
 
     # --------------------------------------------------------------------------
     # MODE C: MULTIMODAL DETECTION (TEXT + AUDIO FUSION)
@@ -416,7 +429,7 @@ if nav_choice == "🎯 Try SarcasTone – Multimodal Sarcasm Detector":
             detect_mm_btn = st.button("🚀 Run Multimodal Fusion Detection", type="primary", use_container_width=True)
 
         with col_m2:
-            if detect_mm_btn or mm_text:
+            if detect_mm_btn:
                 if not mm_text.strip():
                     st.warning("Please enter utterance text.")
                 elif mm_audio_data is None and mm_preset is None:
@@ -493,6 +506,8 @@ if nav_choice == "🎯 Try SarcasTone – Multimodal Sarcasm Detector":
                         d_val = float(disc.get("discord_score", 0.0))
                         st.progress(float(min(1.0, d_val / 2.0)))
                         st.caption(f"Discordance index: {d_val:.3f}. High discordance (>0.40) indicates severe tension between textual wording and speech prosody.")
+            else:
+                st.info("👆 Enter text and provide speech audio on the left, then click **'Run Multimodal Fusion Detection'** to compute affective discordance.")
 
 # ==============================================================================
 # SECTION 2: Sitcom Benchmark Inspector
