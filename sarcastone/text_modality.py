@@ -21,8 +21,13 @@ class TextFeatureExtractor:
     def _load_model(self):
         try:
             print("Loading RoBERTa & CardiffNLP Sentiment model...")
-            self.tokenizer = AutoTokenizer.from_pretrained(SENTIMENT_MODEL_NAME)
-            self.model = AutoModelForSequenceClassification.from_pretrained(SENTIMENT_MODEL_NAME)
+            # Try offline / local files first for fast loading
+            try:
+                self.tokenizer = AutoTokenizer.from_pretrained(SENTIMENT_MODEL_NAME, local_files_only=True)
+                self.model = AutoModelForSequenceClassification.from_pretrained(SENTIMENT_MODEL_NAME, local_files_only=True)
+            except Exception:
+                self.tokenizer = AutoTokenizer.from_pretrained(SENTIMENT_MODEL_NAME)
+                self.model = AutoModelForSequenceClassification.from_pretrained(SENTIMENT_MODEL_NAME)
             self.model.to(self.device)
             self.model.eval()
             print("RoBERTa model successfully loaded.")

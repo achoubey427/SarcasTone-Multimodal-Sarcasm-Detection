@@ -3,154 +3,124 @@
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Framework-Streamlit](https://img.shields.io/badge/Web_UI-Streamlit-FF4B4B.svg)](https://streamlit.io/)
 [![HuggingFace-RoBERTa](https://img.shields.io/badge/NLP-RoBERTa%20%7C%20CardiffNLP-yellow.svg)](https://huggingface.co/)
-[![Speech-openSMILE](https://img.shields.io/badge/Audio-openSMILE%20%7C%20wav2vec2-blueviolet.svg)](https://github.com/audeering/opensmile)
+[![Speech-Prosody](https://img.shields.io/badge/Audio-Librosa%20%7C%20eGeMAPS-blueviolet.svg)](https://librosa.org/)
 [![IEEE Format](https://img.shields.io/badge/Paper-IEEE%20Format-green.svg)](deliverables/SarcasTone_Research_Paper_IEEE.pdf)
 
 > **Bennett University — Department of Computer Science & Engineering**  
 > **Course Capstone Project: Natural Language Processing**  
 > **Authors**: Prince Tomar (`S24CSEU1622`), Somya (`S24CSEU0553`), Ashutosh Choubey (`S24CSEU1634`)  
-> **Project Instructor**: Dr. Saurabh Kumar Srivastava (Office: M-245 | `saurabh.srivastava@bennett.edu.in`)
+> **Project Supervisor**: Dr. Saurabh Kumar Srivastava (Office: M-245 | `saurabh.srivastava@bennett.edu.in`)
 
 ---
 
 ## 🌟 Executive Summary
 
-**Sarcasm** is an intricate linguistic and acoustic phenomenon wherein the speaker's true intent diverges sharply from the literal semantics of their words. Conventional NLP systems fail when encountering sarcastic remarks such as *"Wonderful, another meeting"* because lexical sentiment analysis interprets words like *"wonderful"* as glowing praise. 
+**Sarcasm** is an intricate linguistic and acoustic phenomenon wherein the speaker's true communicative intent diverges sharply from the literal semantics of their words. Conventional NLP systems fail when encountering sarcastic remarks such as *"Wonderful, another meeting"* because lexical sentiment analysis interprets words like *"wonderful"* as positive praise.
 
 **SarcasTone** resolves this fundamental limitation by combining:
-1. **Contextual Text Semantics** extracted via **RoBERTa** and **CardiffNLP Twitter-RoBERTa** sentiment distributions.
-2. **Acoustic Speech Prosody** extracted via the standardized **eGeMAPS parameter set** (pitch F0, loudness/RMS, spectral centroid, articulation rate).
-3. **Speech Affect Analysis** modeled via **wav2vec 2.0** representations fine-tuned on the IEMOCAP 4-class emotion corpus (`neutral`, `happy`, `angry`, `sad`).
+1. **Contextual Text Semantics** extracted via **RoBERTa** and **CardiffNLP Twitter-RoBERTa** sentiment distributions (768-d CLS + 3-class sentiment probabilities).
+2. **Acoustic Speech Prosody** extracted via **librosa** and **eGeMAPS-inspired features** (fundamental frequency F0, loudness/RMS dynamics, zero-crossing rate, speech tempo, vocal jitter).
+3. **Speech Affect Analysis** modeling acoustic emotion across 4 classes (`neutral`, `happy`, `angry/annoyed`, `sad/frustrated`).
 4. **An Affective Discordance & Mismatch Engine** that explicitly measures the directional clash between literal wording and vocal delivery.
+5. **Calibrated Machine Learning Classifiers** (MLP, Gradient Boosting, Random Forest) trained and evaluated on the benchmark **MUStARD** dataset with 5-fold cross-validation.
 
 ---
 
-## 🏗️ System Architecture
+## 🚀 Key Features: Try SarcasTone – Multimodal Sarcasm Detector
 
-```
-                                  INPUT STREAM
-            +---------------------------------+  +-------------------------------+
-            | Utterance Text & Context        |  | Speech Audio Waveform (.wav)  |
-            +----------------+----------------+  +---------------+---------------+
-                             |                                   |
-                    [ Text Modality ]                   [ Audio Modality ]
-                             |                                   |
-      +----------------------+----------------------+            |
-      |                                             |            |
-      v                                             v            v
-+---------------------+                    +------------------+ +--------------------+
-| RoBERTa Contextual  |                    | CardiffNLP       | | openSMILE eGeMAPS  |
-| 768-d CLS Embeddings|                    | Twitter Sentiment| | Acoustic Prosody   |
-+----------+----------+                    +--------+---------+ +---------+----------+
-           |                                        |                     |
-           |                                        v                     v
-           |                             +--------------------+ +--------------------+
-           |                             | Sentiment Polarities| | wav2vec 2.0 Affect |
-           |                             | [P_neg,P_neu,P_pos]| | [neu, hap, ang, sad|
-           |                             +----------+---------+ +---------+----------+
-           |                                        |                     |
-           |                                        +----------+----------+
-           |                                                   |
-           |                                                   v
-           |                                      +--------------------------+
-           |                                      | SarcasTone Discordance   |
-           |                                      | & Mismatch Engine        |
-           |                                      | (Affective Clash Vector) |
-           |                                      +------------+-------------+
-           |                                                   |
-           +-------------------------+-------------------------+
-                                     |
-                                     v
-                       +---------------------------+
-                       | Multimodal Fusion Layer   |
-                       | (Calibrated Random Forest)|
-                       +-------------+-------------+
-                                     |
-                                     v
-                       +---------------------------+
-                       | Sarcasm Verdict & Rationale|
-                       | Sarcastic vs Non-Sarcastic|
-                       +---------------------------+
-```
+SarcasTone features a real-time web application (`app.py`) providing three distinct prediction modes:
+
+### 📖 Mode A: Text Sarcasm Detection
+- Enter any custom sentence or utterance with optional conversational context.
+- Analyzes contextual embeddings and sentiment polarity using RoBERTa.
+- Returns real prediction (Sarcastic vs. Non-Sarcastic), confidence percentage, and sentiment distribution breakdown.
+
+### 🎙️ Mode B: Audio Sarcasm Detection
+- **Microphone Recording:** Record your voice directly in the browser via native microphone input.
+- **Audio File Upload:** Upload `.wav`, `.mp3`, or `.ogg` audio files.
+- **Vocal Presets:** Choose from calibrated SITCOM acoustic profiles (*Sarcastic Drawl*, *Deadpan Monotone*, *Annoyed*, *Genuinely Enthusiastic*).
+- Extracts pitch contour, RMS energy, and acoustic affect to predict sarcastic intent.
+
+### ⚡ Mode C: Multimodal Detection (Text + Audio Fusion)
+- Submit both text and spoken audio together.
+- Processes linguistic and acoustic channels through dedicated feature extraction pipelines.
+- Evaluates the **affective discordance** (e.g., positive wording delivered with irritated intonation).
+- Generates a **3-way comparative scorecard**: Text Model prediction, Audio Model prediction, and Final Fused prediction.
 
 ---
 
-## ⚡ Mathematical Formulation: The Discordance Engine
+## 📊 Dataset Audit Summary
 
-1. **Continuous Text Polarity**:
-   $$\text{Pol}_{\text{text}} = P(\text{Positive}) - P(\text{Negative}) \in [-1.0, 1.0]$$
+A rigorous audit of the repository datasets was conducted:
+- Detailed audit documentation: [`DATASET_AUDIT.md`](DATASET_AUDIT.md)
 
-2. **Continuous Speech Valence & Arousal**:
-   $$\text{Val}_{\text{speech}} = P(\text{Happy}) - \left(0.8 \cdot P(\text{Angry}) + 0.9 \cdot P(\text{Sad})\right) \in [-1.0, 1.0]$$
-   $$\text{Aro}_{\text{speech}} = 0.9 \cdot P(\text{Angry}) + 0.85 \cdot P(\text{Happy}) + 0.3 \cdot P(\text{Sad}) + 0.1 \cdot P(\text{Neutral})$$
-
-3. **Canonical Sarcastic Clash** (Positive words + Hostile/Frustrated delivery):
-   $$D_{\text{pos}\rightarrow\text{neg}} = \max\left(0, \text{Pol}_{\text{text}}\right) \cdot \left(P(\text{Angry}) + P(\text{Sad})\right)$$
-
-4. **Mock-Cheerful Clash** (Negative words + Upbeat sing-song delivery):
-   $$D_{\text{neg}\rightarrow\text{pos}} = \max\left(0, -\text{Pol}_{\text{text}}\right) \cdot P(\text{Happy})$$
-
-5. **Agreement Index**:
-   $$A_{\text{agree}} = P(\text{pos})P(\text{hap}) + P(\text{neg})[P(\text{ang}) + P(\text{sad})] + P(\text{neu})P(\text{neu})$$
+| Requirement | MUStARD | MUStARD++ |
+|---|---|---|
+| **Text available** | ✅ Yes – 690 utterances in `sarcasm_data.json` | ✅ Yes – 1,202 labeled sentences in `mustard++_text.csv` |
+| **Audio available** | ⚠️ 690 pre-extracted feature matrices (`audio_features.p`) | ❌ No audio files present |
+| **Video available** | ❌ None | ❌ None |
+| **Total samples** | 690 (345 sarcastic, 345 non-sarcastic) | 1,202 labeled (601 sarcastic, 601 non-sarcastic) |
+| **Text-Audio alignment** | ✅ Perfect 690/690 key match | ❌ N/A (text only) |
+| **Dataset status** | **Partially Multimodal** (aligned acoustic matrices) | **Text-Only** |
 
 ---
 
-## 📊 Benchmark Results (5-Fold Cross Validation on MUStARD)
+## 📈 Model Evaluation (5-Fold Cross Validation on MUStARD)
 
-Evaluated across the standardized 5-fold splits of the **MUStARD** dataset (690 clips, 345 sarcastic, 345 non-sarcastic from *Friends* and *The Big Bang Theory*):
+All models were evaluated on the 690 MUStARD benchmark samples across 5 stratified folds. No hardcoded metrics:
+- Detailed evaluation report: [`MODEL_EVALUATION.md`](MODEL_EVALUATION.md)
 
-| Model Configuration | Modality | Accuracy | Precision | Recall | F1 Score |
-| :--- | :--- | :---: | :---: | :---: | :---: |
-| **TF-IDF + Logistic Regression** | Text (Lexical Baseline) | 53.91% | 54.50% | 48.68% | 51.34% |
-| **Text-Only (RoBERTa + Sentiment)** | Text (Contextual) | 61.30% | 61.31% | 62.62% | 61.85% |
-| **Audio-Only (eGeMAPS + wav2vec)** | Speech Prosody | 68.84% | 67.37% | 73.10% | 70.08% |
-| **Multimodal Base (Text + Audio)** | Multimodal Concatenation | 66.96% | 66.99% | 67.79% | 67.14% |
-| **SarcasTone (Full + Mismatch)** | **Multimodal + Mismatch Engine** | **67.97%** | **66.90%** | **71.29%** | **68.91%** |
-| **SarcasTone + Context History** | Multimodal + Dialogue Context | **67.83%** | **66.88%** | **70.67%** | **68.68%** |
-
----
-
-## 🔬 Hypotheses Validation
-
-- **Hypothesis H1 (Multimodal Superiority)**: **SUPPORTED**  
-  Multimodal fusion (67.14% F1) significantly surpasses text-only RoBERTa (61.85% F1) by **+5.29% F1**.
-- **Hypothesis H2 (Discordance Disambiguation)**: **SUPPORTED**  
-  On discordant utterances (positive text clashing with hostile/frustrated speech), the speech prosody channel resolves lexical ambiguity, elevating F1 from 66.53% to 69.67% (**+4.73% relative gain**).
-- **Hypothesis H3 (Explicit Mismatch Representation)**: **SUPPORTED**  
-  Explicitly engineering the mismatch features provides an additional **+1.77% F1 gain** over naive multimodal concatenation (68.91% vs 67.14%), proving that structured inductive bias helps guide neural fusion.
+| Model Configuration | Modality | Classifier | Accuracy | Precision | Recall | F1 Score |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **Text-Only** | RoBERTa + Sentiment (771-d) | MLP | 62.17% | 62.13% | 63.49% | **62.67%** |
+| **Audio-Only** | Prosody + Emotion (59-d) | Gradient Boosting | 67.68% | 66.97% | 69.87% | **68.30%** |
+| **Multimodal Fusion** | Text + Audio + Mismatch (841-d) | MLP | 66.81% | 65.33% | 72.19% | **68.40%** |
+| **Text + Audio Base** | Text + Audio Concatenation (830-d) | Random Forest | 68.70% | 68.55% | 69.89% | **69.07%** |
 
 ---
 
-## 🛡️ Whisper ASR Speech Recognition Robustness
+## 🌐 Production REST API Endpoints (`api/index.py`)
 
-When automatic speech recognition introduces transcription errors (phonetic substitutions, dropped filler particles, contraction variance):
-- **Text-Only RoBERTa** suffers degradation from noisy lexical inputs.
-- **SarcasTone Multimodal** maintains **68.77% F1** (a negligible change of only 0.0014), because the acoustic prosody channel is extracted directly from raw audio waveforms and remains completely unaffected by speech-to-text noise.
+A serverless-ready HTTP API is provided in `api/index.py`:
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/health` | Health check, version info, and model readiness status |
+| `GET` | `/api/metrics` | 5-fold cross-validation performance metrics across all models |
+| `GET` | `/api/dataset` | Dataset audit counts and availability summary |
+| `POST` | `/api/predict/text` | Text sarcasm prediction (`{"utterance": "...", "context": [...]}`) |
+| `POST` | `/api/predict/audio` | Audio sarcasm prediction (`{"preset_name": "..."}` or `{"audio_base64": "..."}`) |
+| `POST` | `/api/predict/multimodal` | Full multimodal fusion prediction (`{"utterance": "...", "preset_name": "..."}`) |
 
 ---
 
-## 🚀 Quickstart & Interactive Web Application
+## 💻 Quickstart & Instructions to Run
 
-### 1. Installation
+### 1. Prerequisites
+- Python 3.10+ (tested on Python 3.13)
+- PyTorch, Transformers, Scikit-learn, Librosa, Soundfile, Streamlit
+
+### 2. Setup
 ```bash
-git clone https://github.com/lucid-noether/SarcasTone.git
-cd SarcasTone
+git clone https://github.com/achoubey427/SarcasTone-Multimodal-Sarcasm-Detection.git
+cd SarcasTone-Multimodal-Sarcasm-Detection
 pip install -r requirements.txt
 ```
 
-### 2. Launch Real-Time Web Application
+### 3. Launch Web Application
 ```bash
 streamlit run app.py --server.port 8501
 ```
-Open your browser at `http://localhost:8501` to test:
-- **Live Sarcasm Inspector**: Enter custom text or load sitcom presets (Sheldon Cooper, Chandler Bing, Rachel Green).
-- **Audio Inputs**: Upload `.wav`/`.mp3` recordings or select calibrated vocal intonation presets (*Sarcastic Drawl*, *Deadpan Monotone*, *Annoyed*, *Genuinely Enthusiastic*).
-- **Real-Time Visualizations**: Inspect CardiffNLP sentiment, speech emotion distribution, discordance progress meters, and explainable AI rationales.
-- **Benchmark Explorer**: Search and filter 690 clips from MUStARD and 1,202 clips from MUStARD++.
+Open `http://localhost:8501` to use the interactive detector.
 
-### 3. Re-run Full Experimental Suite
+### 4. Run Automated End-to-End Test Suite
 ```bash
-python scripts/run_experiments.py
+python tests/test_pipeline_and_api.py
+```
+
+### 5. Re-train Models
+```bash
+python scripts/train_models.py
 ```
 
 ---
@@ -158,39 +128,42 @@ python scripts/run_experiments.py
 ## 📁 Repository Structure
 
 ```
-SarcasTone/
-├── app.py                           # Real-time Streamlit web application
-├── sarcastone/                      # Core SarcasTone python package
-│   ├── text_modality.py             # RoBERTa embeddings & CardiffNLP sentiment
-│   ├── audio_modality.py            # eGeMAPS prosody & wav2vec emotion estimation
-│   ├── mismatch.py                  # Affective Discordance & Mismatch Engine
-│   ├── dataset.py                   # MUStARD & MUStARD++ loaders & 5-fold manager
-│   ├── models.py                    # Classifiers and experimental suites
-│   ├── pipeline.py                  # Unified inference pipeline with XAI rationale
-│   └── asr_whisper.py               # Whisper ASR transcription robustness module
-├── scripts/
-│   ├── setup_datasets.py            # Automated downloader for benchmark datasets
-│   └── run_experiments.py           # Runs all 8 experimental setups & saves metrics
-├── deliverables/
-│   ├── SarcasTone_Research_Paper_IEEE.docx # IEEE format camera-ready paper (Word)
-│   ├── SarcasTone_Research_Paper_IEEE.pdf  # IEEE format camera-ready paper (PDF)
-│   ├── SarcasTone_Presentation.pptx        # 10-slide polished presentation deck
-│   ├── generate_ieee_paper.py              # Paper generation script
-│   └── generate_presentation.py            # Presentation slide generation script
-├── data/
-│   ├── mustard/                     # 690 clips, audio features & split indices
-│   ├── mustard_plus/                # 1,202 clips with emotion/valence/arousal
-│   └── results/                     # benchmark_results.json & summaries
+SarcasTone-Multimodal-Sarcasm-Detection/
+├── app.py                             # Interactive Streamlit Web Application (Modes A, B, C)
+├── DATASET_AUDIT.md                   # Complete audit report for MUStARD & MUStARD++
+├── MODEL_EVALUATION.md                # 5-fold cross-validation evaluation report
+├── api/
+│   ├── index.py                       # REST API handler for text, audio & multimodal endpoints
+│   └── requirements.txt               # API dependencies
+├── sarcastone/                        # Core Python package
+│   ├── text_modality.py               # RoBERTa embeddings & CardiffNLP sentiment
+│   ├── audio_modality.py              # Prosodic feature extraction & affect estimation
+│   ├── mismatch.py                    # Affective Discordance & Mismatch Engine
+│   ├── dataset.py                     # MUStARD & MUStARD++ dataset managers
+│   ├── models.py                      # Model building & experimental suites
+│   ├── pipeline.py                    # Unified inference pipeline for text, audio & fusion
+│   └── asr_whisper.py                 # Whisper ASR transcription robustness simulation
 ├── models/
-│   └── sarcastone_fusion_model.joblib # Calibrated trained multimodal model
+│   ├── sarcastone_text_model.joblib   # Trained text-only classifier
+│   ├── sarcastone_audio_model.joblib  # Trained audio-only classifier
+│   └── sarcastone_multimodal_model.joblib # Trained multimodal fusion classifier
+├── scripts/
+│   ├── audit_datasets.py              # Automated dataset verification script
+│   ├── train_models.py                # 5-fold CV training pipeline for all 3 models
+│   └── run_experiments.py             # Baseline benchmark suite
+├── tests/
+│   └── test_pipeline_and_api.py       # Comprehensive end-to-end test suite
+├── deliverables/
+│   ├── SarcasTone_Research_Paper_IEEE.pdf  # Camera-ready IEEE format paper
+│   ├── SarcasTone_Faculty_Project_Report.pdf # Faculty-ready project report
+│   └── SarcasTone_Presentation.pptx   # 10-slide presentation deck
 └── README.md
 ```
 
 ---
 
-## 📄 Deliverables Checklist
+## 📄 Academic Citation & Project Context
 
-- [x] **Source Code**: Fully modular, documented GitHub repository.
-- [x] **Research Paper**: IEEE Two-Column Style Word (`.docx`) and compiled PDF (`.pdf`).
-- [x] **Presentation Slides**: Complete 16:9 widescreen presentation deck (`.pptx`).
-- [x] **Real Working Web App**: Interactive Streamlit web application live on port 8501.
+Developed as an undergraduate Capstone Project at **Bennett University (Times of India Group)**, Greater Noida, India.
+- Supervisor: Dr. Saurabh Kumar Srivastava
+- Students: Prince Tomar, Somya, Ashutosh Choubey
